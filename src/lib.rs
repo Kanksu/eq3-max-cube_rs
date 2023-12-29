@@ -13,7 +13,7 @@ use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, HeaterT
 use crate::messages::from_message_l;
 
 /// MaxCube represtents a MAX! Cube Gateway.
-/// All operations to the devices shall be triggert from hier 
+/// All operations to the devices shall be triggert from hier.
 #[derive(Debug)]
 pub struct MaxCube {
     /// Socket connection to Cube. The connection will be kept alive.
@@ -30,8 +30,14 @@ pub struct MaxCube {
 impl MaxCube {
     /// starts a connection to MAX! Cube gateway.
     /// The connection will be kept alive.
-    /// After successful connection, the cube will sent back the meta data and status data to the whole system
-    /// back immediately. The data will be decoded and stored in the structure.
+    /// After successful connection, the cube will send back the meta data and status data of the whole system
+    /// immediately. The data will be decoded and stored in this structure.
+    /// # Examples
+    /// 
+    /// ```
+    /// let cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
+    /// println!("{:?}", cube);
+    /// ```
     pub fn new(addr: &SocketAddr) -> Result<Self> {
         let stream = TcpStream::connect_timeout(addr, Duration::from_secs(15))?;
 
@@ -67,6 +73,12 @@ impl MaxCube {
     }
 
     /// sets the thermostat with the rf_address to the manual mode and the given temperature.
+    /// # Examples
+    /// 
+    /// ```
+    /// let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
+    /// cube.set_temperature(1763839, 21.0).unwrap();
+    /// ```
     pub fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
 
         // the room id must be set, if the room id = 0, all thermostats will be set
