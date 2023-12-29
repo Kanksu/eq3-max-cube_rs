@@ -1,4 +1,26 @@
-# EQ3 Max heating thermostat
+# A rust implementation for eQ3 / ELV MAX! Heating system
+
+This crate implements some messages/command to the eQ3 / ELV Max! Cube via TCP connection.
+
+## Usage
+
+```rust
+use eq3_max_cube_rs::MaxCube;
+
+fn main() {
+    // connect to Max Cube:
+    let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
+
+    // print the current status of the system
+    println!("System: {:?}", cube);
+
+    // set temperature of a thermostat
+    cube.set_temperature(1763839, 21.0).unwrap();
+}
+
+```
+
+Only M-, S-, L-Messsages have been implemented. It is enough for operating thermostats.
 
 
 ## Reference
