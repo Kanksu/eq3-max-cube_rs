@@ -20,9 +20,9 @@ fn main() {
 
 ```
 
-Only M-, S-, L-Messsages have been implemented. It is enough for operating thermostats.
+Only M-, S-, L-Messsages are implemented. It is enough for operating thermostats though.
 
 
 ## Reference
 
-https://github.com/Bouni/max-cube-protocol/blob/master/protocol.md
+https://github.com/Bouni/max-cube-protocol/

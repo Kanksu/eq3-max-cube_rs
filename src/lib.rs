@@ -1,3 +1,5 @@
+#![crate_name = "eq3_max_cube_rs"]
+
 use std::io::{BufReader, BufRead, Write};
 use std::net::{TcpStream, SocketAddr};
 use std::time::Duration;
@@ -10,15 +12,26 @@ use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, HeaterT
 
 use crate::messages::from_message_l;
 
+/// MaxCube represtents a MAX! Cube Gateway.
+/// All operations to the devices shall be triggert from hier 
 #[derive(Debug)]
 pub struct MaxCube {
+    /// Socket connection to Cube. The connection will be kept alive.
     stream: TcpStream,
+
+    /// A list to all rooms (groups)
     pub rooms: Rooms,
+
+    /// A list to all devices
     pub devices: Devices,
 }
 
 
 impl MaxCube {
+    /// starts a connection to MAX! Cube gateway.
+    /// The connection will be kept alive.
+    /// After successful connection, the cube will sent back the meta data and status data to the whole system
+    /// back immediately. The data will be decoded and stored in the structure.
     pub fn new(addr: &SocketAddr) -> Result<Self> {
         let stream = TcpStream::connect_timeout(addr, Duration::from_secs(15))?;
 
@@ -53,6 +66,7 @@ impl MaxCube {
         Ok(cube)
     }
 
+    /// sets the thermostat with the rf_address to the manual mode and the given temperature.
     pub fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
 
         // the room id must be set, if the room id = 0, all thermostats will be set

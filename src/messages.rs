@@ -3,6 +3,8 @@ use std::collections::VecDeque;
 use anyhow::{Result, anyhow};
 use base64::{Engine as _, engine::general_purpose};
 
+/// represents a heating system device, e.g. thermostat, shutter contact...
+/// Only thermostat is supported by now.
 #[derive(Debug, Default)]
 pub enum Device {
     #[default]
@@ -10,31 +12,50 @@ pub enum Device {
     HeaterThermostat(HeaterThermostat),
 }
 
+/// represents a thermostat of heater
 #[derive(Debug, Default)]
 pub struct HeaterThermostat {
+    /// RF address of the thermostat
     pub rf_address: u32,
+    /// Serial number of the thermostat
     pub serial: String,
+    /// Name of the thermostat
     pub name: String,
+    /// room id (group id), which the thermostat belongs to
     pub room_id: u8,
+    /// current valve position, in percent
     pub valve_position: u8,
+    /// current temperature set point (which is displayed on thermostat)
     pub temperature_set: f64,
+    /// current temperature, which is measured by the thermostat
+    /// this value is not always available
     pub temperature_measured: f64,
+    /// if the battery level is low
     pub battery_low: bool,
+    /// if the thermostat in error state
     pub error: bool,
+    /// if the values from thermostat are valid
     pub valid: bool,
 }
 
+/// represents a room/group, which is set up by MAX! software
 #[derive(Debug, Default)]
 pub struct Room {
+    /// room id (group id)
     pub room_id: u8,
+    /// room name
     pub name: String,
+    /// RF address of the room
     pub rf_address: u32,
 }
 
+/// List of devices
 pub type Devices = Vec<Device>;
+/// List of rooms
 pub type Rooms = Vec<Room>;
 
-pub fn from_message_m(recv: &str) -> Result<(Rooms, Devices)> {
+/// the function shall not be called directly
+pub(in super) fn from_message_m(recv: &str) -> Result<(Rooms, Devices)> {
     // assertions
     if !recv.starts_with("M:") {
         return Err(anyhow!("Message `M` expected, but `{}` received.", recv.chars().next().unwrap()));
@@ -98,7 +119,7 @@ pub fn from_message_m(recv: &str) -> Result<(Rooms, Devices)> {
 }
 
 
-pub fn from_message_l(recv: &str, devices: &mut Devices) -> Result<()> {
+pub(in super) fn from_message_l(recv: &str, devices: &mut Devices) -> Result<()> {
     // assertions
     if !recv.starts_with("L:") {
         return Err(anyhow!("Message `L` expected, but `{}` received.", recv.chars().next().unwrap()));
@@ -134,13 +155,17 @@ pub fn from_message_l(recv: &str, devices: &mut Devices) -> Result<()> {
     Ok(())
 }
 
+/// Device mode, can be Manual, Auto (other mode, such as Vaccation etc is not supported by now)
 #[derive(Debug, Default, Copy, Clone)]
 pub enum DeviceMode {
+    /// temperature set point is manually set, won't change automatically
     Manual = 1,
+    /// temperature set point will be changed automatically according the time scheduling
     #[default]
     Auto = 0,
 }
 
+/// DeviceConfig is used to change the device configuration, like temperature set point
 #[derive(Default, Debug)]
 pub struct DeviceConfig {
     mode: DeviceMode,
@@ -150,30 +175,37 @@ pub struct DeviceConfig {
 }
 
 impl DeviceConfig {
+    /// returns a instant of DeviceConfig with default values
     pub fn new() -> Self {
         Self { ..Default::default() }
     }
 
+    /// set the mode for the set command
     pub fn set_mode(mut self, mode: DeviceMode) -> Self {
         self.mode = mode;
         self
     }
 
+    /// set the temperature set point for the set command
     pub fn set_temperature(mut self, temperature: f64) -> Self {
         self.temperature = temperature;
         self
     }
 
+    /// set the RF address for the set command
     pub fn set_address(mut self, rf_address: u32) -> Self {
         self.rf_address = rf_address;
         self
     }
 
+    /// set the room id for the set command
+    /// If the roomt id is 0, the configuration will be applied on all devices
     pub fn set_room_id(mut self, room_id: u8) -> Self {
         self.room_id = room_id;
         self
     }
 
+    /// build the command payload
     pub fn build(&self) -> String {
         let mut data = vec![0x00u8, 0x04, 0x40, 0x00, 0x00, 0x00];
         data.push((self.rf_address >> 16) as u8);
