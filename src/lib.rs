@@ -8,7 +8,7 @@ use log::debug;
 
 pub mod messages;
 
-use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, HeaterThermostat, Device};
+use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, Device};
 
 use crate::messages::from_message_l;
 

@@ -2,12 +2,11 @@
 name = "eq3-max-cube_rs"
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
 license-file = "LICENSE"
 keywords = ["eq3", "max", "cube", "smarthome"]
 description = "an rust implmentation for operating MAX! Cube"
 repository = "https://github.com/Kanksu/eq3-max-cube_rs"
-readme = "readme.MD"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
