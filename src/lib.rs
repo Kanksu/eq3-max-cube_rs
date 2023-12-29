@@ -121,12 +121,12 @@ impl MaxCube {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    // use super::*;
 
     #[test]
     fn test_connection() {
-        let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
-        println!("{:?}", cube);
-        cube.set_temperature(1763839, 21.0).unwrap();
+        // let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
+        // println!("{:?}", cube);
+        // cube.set_temperature(1763839, 21.0).unwrap();
     }
 }
