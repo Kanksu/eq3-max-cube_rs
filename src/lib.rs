@@ -1,23 +1,25 @@
-use std::io::{BufReader, BufRead, BufWriter, Write, Read};
+use std::io::{BufReader, BufRead, Write};
 use std::net::{TcpStream, SocketAddr};
 use std::time::Duration;
 use anyhow::{Result, anyhow};
 use log::debug;
 
-mod messages;
+pub mod messages;
 
-use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode};
+use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, HeaterThermostat, Device};
+
+use crate::messages::from_message_l;
 
 #[derive(Debug)]
-struct MaxCube {
+pub struct MaxCube {
     stream: TcpStream,
-    rooms: Rooms,
-    devices: Devices,
+    pub rooms: Rooms,
+    pub devices: Devices,
 }
 
 
 impl MaxCube {
-    fn new(addr: &SocketAddr) -> Result<Self> {
+    pub fn new(addr: &SocketAddr) -> Result<Self> {
         let stream = TcpStream::connect_timeout(addr, Duration::from_secs(15))?;
 
         let mut cube = MaxCube {
@@ -41,6 +43,7 @@ impl MaxCube {
             debug!("{:?}", received);
 
             if received.starts_with('L') {
+                from_message_l(&received, &mut cube.devices)?;
                 break;
             } else if received.starts_with('M') {
                 (cube.rooms, cube.devices) = from_message_m(&received)?;
@@ -50,9 +53,24 @@ impl MaxCube {
         Ok(cube)
     }
 
-    fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
-        let cmd = DeviceConfig::new()
-            .set_address(rf_address)
+    pub fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
+
+        // the room id must be set, if the room id = 0, all thermostats will be set
+        // to the temperature.
+
+        let mut dev_conf = DeviceConfig::new();
+
+        for dev in self.devices.iter() {
+            if let Device::HeaterThermostat(ts) = dev {
+                if ts.rf_address == rf_address {
+                    dev_conf = dev_conf.set_room_id(ts.room_id);
+                    break;
+                }
+            }
+        }
+
+
+        let cmd = dev_conf.set_address(rf_address)
             .set_mode(DeviceMode::Manual)
             .set_temperature(temperature)
             .build();
@@ -82,7 +100,7 @@ mod test {
     #[test]
     fn test_connection() {
         let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
-        // println!("{:?}", cube);
-        cube.set_temperature(1763839, 20.0).unwrap();
+        println!("{:?}", cube);
+        cube.set_temperature(1763839, 21.0).unwrap();
     }
 }

@@ -203,7 +203,7 @@ mod test {
 
         let data =  "M:00,01,VgIEAQNCYWQK7WkCBEJ1cm8K8wADCldvaG56aW1tZXIK8wwEDFNjaGxhZnppbW1lcgr1QAUCCu1pS0VRMDM3ODA0MAZIVCBCYWQBAgrzAEtFUTAzNzk1NDQHSFQgQnVybwICCvMMS0VRMDM3OTU1NhlIVCBXb2huemltbWVyIEJhbGtvbnNlaXRlAwIK83lLRVEwMzc5NjY1GkhUIFdvaG56aW1tZXIgRmVuc3RlcnNlaXRlAwIK9UBLRVEwMzgwMTIwD0hUIFNjaGxhZnppbW1lcgQB";
         
-        let (rooms, devices) = from_message_m(&data).unwrap();
+        let (rooms, _) = from_message_m(&data).unwrap();
 
         // println!("{:?}, {:?}", rooms, devices); 
         assert_eq!(rooms.len(), 4);
