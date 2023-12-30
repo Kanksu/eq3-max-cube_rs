@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 
 /// represents a heating system device, e.g. thermostat, shutter contact...
 /// Only thermostat is supported by now.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub enum Device {
     #[default]
     NotSupported,

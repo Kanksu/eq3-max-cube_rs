@@ -9,14 +9,16 @@ use log::debug;
 pub mod messages;
 
 use messages::{from_message_m, Devices, Rooms, DeviceConfig, DeviceMode, Device};
+use serde::Serialize;
 
 use crate::messages::from_message_l;
 
 /// MaxCube represtents a MAX! Cube Gateway.
 /// All operations to the devices shall be triggert from hier.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct MaxCube {
     /// Socket connection to Cube. The connection will be kept alive.
+    #[serde(skip_serializing)]
     stream: TcpStream,
 
     /// A list to all rooms (groups)
