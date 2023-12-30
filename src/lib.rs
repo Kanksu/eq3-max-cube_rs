@@ -37,7 +37,7 @@ impl MaxCube {
     /// ```
     /// use std::net::SocketAddr;
     /// 
-    /// let cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
+    /// let cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).await.unwrap();
     /// println!("{:?}", cube);
     /// ```
     pub async fn new(addr: &SocketAddr) -> Result<Self> {
