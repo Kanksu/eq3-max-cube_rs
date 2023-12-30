@@ -1,8 +1,8 @@
 #![crate_name = "eq3_max_cube_rs"]
 
-use std::io::{BufReader, BufRead, Write};
-use std::net::{TcpStream, SocketAddr};
-use std::time::Duration;
+use async_std::io::BufReader;
+use async_std::prelude::*;
+use async_std::net::{TcpStream, SocketAddr};
 use anyhow::{Result, anyhow};
 use log::debug;
 
@@ -35,11 +35,13 @@ impl MaxCube {
     /// # Examples
     /// 
     /// ```
+    /// use std::net::SocketAddr;
+    /// 
     /// let cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
     /// println!("{:?}", cube);
     /// ```
-    pub fn new(addr: &SocketAddr) -> Result<Self> {
-        let stream = TcpStream::connect_timeout(addr, Duration::from_secs(15))?;
+    pub async fn new(addr: &SocketAddr) -> Result<Self> {
+        let stream = TcpStream::connect(addr).await?;
 
         let mut cube = MaxCube {
             stream,
@@ -57,7 +59,7 @@ impl MaxCube {
 
         loop {
             let mut received = String::new();
-            reader.read_line(&mut received)?;
+            reader.read_line(&mut received).await?;
             let received = received.replace("\r\n", "");
             debug!("{:?}", received);
 
@@ -76,10 +78,10 @@ impl MaxCube {
     /// # Examples
     /// 
     /// ```
-    /// let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
-    /// cube.set_temperature(1763839, 21.0).unwrap();
+    /// let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).await.unwrap();
+    /// cube.set_temperature(1763839, 21.0).await.unwrap();
     /// ```
-    pub fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
+    pub async fn set_temperature(&mut self, rf_address: u32, temperature: f64) -> Result<()> {
 
         // the room id must be set, if the room id = 0, all thermostats will be set
         // to the temperature.
@@ -101,12 +103,12 @@ impl MaxCube {
             .set_temperature(temperature)
             .build();
 
-        self.stream.write_all(cmd.as_bytes())?;
-        self.stream.flush()?;
+        self.stream.write_all(cmd.as_bytes()).await?;
+        self.stream.flush().await?;
 
         let mut resp = "".to_string();
         let mut reader = BufReader::new(&self.stream);
-        reader.read_line(&mut resp)?;
+        reader.read_line(&mut resp).await?;
 
         let resp_code = resp.split(',').into_iter().collect::<Vec<_>>().get(1).ok_or(anyhow!("Response not well-formatted."))?.parse::<u8>()?;
 
@@ -115,18 +117,5 @@ impl MaxCube {
         } else {
             Err(anyhow!("Device configuration failed."))
         }
-    }
-}
-
-
-#[cfg(test)]
-mod test {
-    // use super::*;
-
-    #[test]
-    fn test_connection() {
-        // let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).unwrap();
-        // println!("{:?}", cube);
-        // cube.set_temperature(1763839, 21.0).unwrap();
     }
 }
