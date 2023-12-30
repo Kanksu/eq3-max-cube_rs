@@ -2,7 +2,7 @@
 
 use async_std::io::BufReader;
 use async_std::prelude::*;
-use async_std::net::{TcpStream, SocketAddr};
+use async_std::net::{TcpStream, ToSocketAddrs};
 use anyhow::{Result, anyhow};
 use log::debug;
 
@@ -40,7 +40,8 @@ impl MaxCube {
     /// let cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).await.unwrap();
     /// println!("{:?}", cube);
     /// ```
-    pub async fn new(addr: &SocketAddr) -> Result<Self> {
+    pub async fn new<A>(addr: A) -> Result<Self> 
+        where A: ToSocketAddrs {
         let stream = TcpStream::connect(addr).await?;
 
         let mut cube = MaxCube {
