@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
-
 use anyhow::{Result, anyhow};
 use base64::{Engine as _, engine::general_purpose};
+use serde::{Serialize, Deserialize};
 
 /// represents a heating system device, e.g. thermostat, shutter contact...
 /// Only thermostat is supported by now.
@@ -13,7 +13,7 @@ pub enum Device {
 }
 
 /// represents a thermostat of heater
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct HeaterThermostat {
     /// RF address of the thermostat
     pub rf_address: u32,
@@ -39,7 +39,7 @@ pub struct HeaterThermostat {
 }
 
 /// represents a room/group, which is set up by MAX! software
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Room {
     /// room id (group id)
     pub room_id: u8,
