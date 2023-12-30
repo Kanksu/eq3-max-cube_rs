@@ -9,7 +9,7 @@ async fn list_meta_data() {
 
 async fn change_temp() {
     let mut cube = MaxCube::new(&SocketAddr::from(([172, 22, 51, 191], 62910))).await.unwrap();
-    cube.set_temperature(1763830, 20.5).await.unwrap();
+    cube.set_temperature(1763839, 20.0).await.unwrap();
 }
 
 #[tokio::main]

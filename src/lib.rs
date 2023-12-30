@@ -88,15 +88,23 @@ impl MaxCube {
 
         let mut dev_conf = DeviceConfig::new();
 
-        for dev in self.devices.iter() {
-            if let Device::HeaterThermostat(ts) = dev {
-                if ts.rf_address == rf_address {
-                    dev_conf = dev_conf.set_room_id(ts.room_id);
-                    break;
-                }
+        let mut dev_it = self.devices.iter().filter(|e| {
+            if let Device::HeaterThermostat(ts) = e {
+                ts.rf_address == rf_address
+            } else {
+                false
             }
-        }
+        });
 
+        if let Some(dev) = dev_it.next() {
+            if let Device::HeaterThermostat(ts) = dev {
+                dev_conf = dev_conf.set_room_id(ts.room_id);
+            } else {
+                return Err(anyhow!("Device type not supported."));
+            } 
+        } else {
+            return Err(anyhow!("Device with RF address {} not found.", rf_address));
+        }
 
         let cmd = dev_conf.set_address(rf_address)
             .set_mode(DeviceMode::Manual)
