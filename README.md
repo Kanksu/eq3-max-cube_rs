@@ -1,5 +1,10 @@
 # A rust implementation for eQ3 / ELV MAX! Heating system
 
+[![Crates.io Version](https://img.shields.io/crates/v/eq3-max-cube_rs)](https://crates.io/crates/eq3-max-cube_rs)
+[![docs.rs](https://img.shields.io/docsrs/eq3-max-cube_rs)](https://docs.rs/eq3-max-cube_rs/latest/)
+![Crates.io License](https://img.shields.io/crates/l/eq3-max-cube_rs)
+![Crates.io Total Downloads](https://img.shields.io/crates/d/eq3-max-cube_rs)
+
 This crate implements some messages/command to the eQ3 / ELV Max! Cube via TCP connection.
 
 ## Usage
