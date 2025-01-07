@@ -224,7 +224,7 @@ pub(super) fn from_message_n(recv: &str) -> Result<Device> {
         Ok(Device::HeaterThermostat(
             HeaterThermostat {
                 rf_address: u32::from_be_bytes([0, b[1], b[2], b[3]]),
-                serial: String::from_utf8_lossy(&b[4..15]).to_string(),
+                serial: String::from_utf8_lossy(&b[4..14]).to_string(),
                 ..Default::default()
             }
         ))
