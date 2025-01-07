@@ -1,5 +1,6 @@
 use eq3_max_cube_rs::MaxCube;
-use std::net::SocketAddr;
+use log::info;
+use std::{net::SocketAddr, time::Duration};
 
 #[allow(dead_code)]
 async fn list_meta_data() {
@@ -15,8 +16,18 @@ async fn change_temp() {
     cube.set_temperature(1763839, 20.0).await.unwrap();
 }
 
+#[allow(dead_code)]
+async fn pair() {
+    let mut cube = MaxCube::new("172.22.51.191:62910").await.unwrap();
+    info!("Pairing...");
+    cube.pair(Duration::from_secs(60)).await.unwrap();
+}
+
 #[tokio::main]
 async fn main() {
-    list_meta_data().await;
+    simple_logger::init_with_level(log::Level::Debug).unwrap();
+
+    // list_meta_data().await;
     // change_temp().await;
+    pair().await;
 }

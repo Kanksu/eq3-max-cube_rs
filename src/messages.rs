@@ -1,7 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::{collections::VecDeque, time::Duration};
 
 /// represents a heating system device, e.g. thermostat, shutter contact...
 /// Only thermostat is supported by now.
@@ -196,6 +196,41 @@ pub(super) fn from_message_l(recv: &str, devices: &mut Devices) -> Result<()> {
     Ok(())
 }
 
+pub(super) fn from_message_n(recv: &str) -> Result<Device> {
+        // assertions
+        if !recv.starts_with("N:") {
+            bail!(
+                "Message `N` expected, but `{}` received.",
+                recv.chars().next().unwrap()
+            );
+        }
+
+        let b = Vec::from(
+            general_purpose::STANDARD.decode(
+                recv.split(":")
+                    .last()
+                    .ok_or(anyhow!("Message N not well-formatted."))?,
+            )?,
+        );
+
+        if b.len() < 15 {
+            bail!("Message `N` shall have a length of 15 bytes. {} received.", b.len())
+        }
+
+        if b[0] != 1 {
+            bail!("Device type not supported. Only heater thermostat supported.");
+        }
+
+        Ok(Device::HeaterThermostat(
+            HeaterThermostat {
+                rf_address: u32::from_be_bytes([0, b[1], b[2], b[3]]),
+                serial: String::from_utf8_lossy(&b[4..15]).to_string(),
+                ..Default::default()
+            }
+        ))
+
+}
+
 /// Device mode, can be Manual, Auto (other mode, such as Vaccation etc is not supported by now)
 #[derive(Debug, Default, Copy, Clone)]
 pub enum DeviceMode {
@@ -261,6 +296,25 @@ impl DeviceConfig {
         cmd.push_str(&general_purpose::STANDARD.encode(data));
         cmd.push_str("\r\n");
         cmd
+    }
+}
+
+
+/// PairingConfig includes the configuration for pairing a new device
+#[derive(Debug)]
+pub struct PairingConfig {
+    /// Timeout configuration for pairing
+    timeout: Duration,
+}
+
+impl PairingConfig {
+    pub fn new(timeout: Duration) -> Self {
+        Self { timeout }
+    }
+
+    pub fn build(&self) -> String {
+        // build n-message
+        format!("n:{:04x}\r\n", u16::try_from(self.timeout.as_secs()).unwrap_or(0xffff))
     }
 }
 

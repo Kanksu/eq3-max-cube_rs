@@ -1,14 +1,17 @@
 #![crate_name = "eq3_max_cube_rs"]
 
+use std::time::Duration;
+
 use anyhow::{anyhow, Result};
 use async_std::io::BufReader;
 use async_std::net::{TcpStream, ToSocketAddrs};
+use async_std::task::sleep;
 use async_std::prelude::*;
-use log::debug;
+use log::{debug, info};
 
 pub mod messages;
 
-use messages::{from_message_m, Device, DeviceConfig, DeviceMode, Devices, Rooms};
+use messages::{from_message_m, from_message_n, Device, DeviceConfig, DeviceMode, Devices, PairingConfig, Rooms};
 use serde::Serialize;
 
 use crate::messages::from_message_l;
@@ -135,5 +138,31 @@ impl MaxCube {
         } else {
             Err(anyhow!("Device configuration failed."))
         }
+    }
+
+    pub async fn pair(&mut self, timeout: Duration) -> Result<()> {
+        let pair_cfg = PairingConfig::new(timeout);
+
+        let payload = pair_cfg.build();
+        self.stream.write_all(payload.as_bytes()).await?;
+        self.stream.flush().await?;
+
+        // response shall be only read after timeout / or aborted
+        sleep(timeout).await;
+
+        let mut reader = BufReader::new(&self.stream);
+
+        let mut received = String::new();
+        reader.read_line(&mut received).await?;
+        let received = received.replace("\r\n", "");
+        debug!("{:?}", received);
+
+        if let Ok(dev) = from_message_n(&received) {
+            info!("New device found: {:?}", dev);
+            self.devices.push(dev);
+        }
+
+        Ok(())
+
     }
 }
